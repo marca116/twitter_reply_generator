@@ -46,7 +46,7 @@ with open(op_path, 'r', encoding="utf-8") as op_file:
 with open(reply_path, 'r', encoding="utf-8") as reply_file:
     with open(final_path, 'w+', encoding="utf-8") as final_file:
         
-        final_file.write(",".join(["op_id", "reply_id", "op_with_reply_text"]) + "\n")
+        final_file.write(",".join(["op_id", "reply_id", "op_text", "reply_text"]) + "\n")
         
         reader = csv.DictReader(reply_file)
         row_idx = 1
@@ -61,17 +61,23 @@ with open(reply_path, 'r', encoding="utf-8") as reply_file:
                 # Skip if op tweet is missing (has been deleted)
                 if op_id in op_dict:
                     
-                    op_text = fix_tweet_text(op_dict[op_id])
+                    op_text = fix_tweet_text(op_dict[op_id]) 
                     reply_text = fix_tweet_text(row["text"])
-                    op_with_reply_text =  '"' + op_text + "{REPLY}" + reply_text + '"'
                     
-                    final_text = ",".join([op_id, reply_id, op_with_reply_text]) + "\n"
-                    
-                    final_file.write(final_text)
-                    
-                    row_idx += 1
-                    
-                    if row_idx % 1000 == 0:
-                        print("Current text index = " + str(row_idx))
+                    if op_text != "" and reply_text != "": # In case the texts are now empty
+                        
+                        op_text = '"' + op_text + '"'
+                        reply_text = '"' + reply_text + '"'
+                        
+                        #op_with_reply_text =  '"' + op_text + "{REPLY}" + reply_text + '"'
+                        
+                        final_text = ",".join([op_id, reply_id, op_text, reply_text]) + "\n"
+                        
+                        final_file.write(final_text)
+                        
+                        row_idx += 1
+                        
+                        if row_idx % 1000 == 0:
+                            print("Current text index = " + str(row_idx))
         
         print("Final text index :" + str(row_idx))
