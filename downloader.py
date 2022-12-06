@@ -7,17 +7,17 @@ from os.path import exists
 from twitter import *
 from datetime import datetime, timedelta
 
-CONSUMER_KEY=''
-CONSUMER_SECRET=''
-TWITTER_APP_NAME=''
+TWITTER_KEY=os.environ['TWITTER_KEY']
+TWITTER_SECRET=os.environ['TWITTER_SECRET']
+TWITTER_APP_NAME=os.environ['TWITTER_APP_NAME']
 
-MY_TWITTER_CREDENTIALS = os.path.expanduser('~/.my_app_credentials')
+MY_TWITTER_CREDENTIALS = os.path.expanduser('~/.my_app_credentials_2')
 if not os.path.exists(MY_TWITTER_CREDENTIALS):
-    oauth_dance(TWITTER_APP_NAME, CONSUMER_KEY, CONSUMER_SECRET, MY_TWITTER_CREDENTIALS)
+    oauth_dance(TWITTER_APP_NAME, TWITTER_KEY, TWITTER_SECRET, MY_TWITTER_CREDENTIALS)
     
-oauth_token, oauth_secret = read_token_file(MY_TWITTER_CREDS)
+oauth_token, oauth_secret = read_token_file(MY_TWITTER_CREDENTIALS)
 
-t = Twitter2(auth=OAuth(oauth_token, oauth_secret, CONSUMER_KEY, CONSUMER_SECRET), retry=True)
+t = Twitter2(auth=OAuth(oauth_token, oauth_secret, TWITTER_KEY, TWITTER_SECRET), retry=True)
 
 def process_tweet(tweet, is_reply, op_tweet_id = None):
     fields = []
