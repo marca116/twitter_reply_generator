@@ -52,7 +52,7 @@ with open(reply_path, 'r', encoding="utf-8") as reply_file:
                 reply_text = tweet_helper.fix_tweet_text(row["text"])
                 
                 # In case the texts are now empty
-                if op_text != "" and reply_text != "" and tweet_helper.filter_tweet(op_text) == None and tweet_helper.filter_tweet(reply_text) == None: 
+                if op_text != "" and reply_text != "" and not tweet_helper.filter_tweet(op_text) and not tweet_helper.filter_tweet(reply_text): 
                     
                     op_text = '"' + op_text + '"'
                     reply_text = '"' + reply_text + '"'

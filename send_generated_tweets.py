@@ -32,7 +32,9 @@ tokenizer = AutoTokenizer.from_pretrained("marca116/twitter_reply_generator")
 model = AutoModelForCausalLM.from_pretrained("marca116/twitter_reply_generator")
 model.cuda()
 print("model loaded")
+
 device = torch.device("cuda")
+max_token_length = 180 # About 100 per tweets, better if this number is a little less than the true max (250)
 
 def generate_outputs(input_text, nb_seq):
     text_to_generate = input_text + "{REPLY}"
@@ -40,7 +42,7 @@ def generate_outputs(input_text, nb_seq):
     encoded_input = tokenizer.encode(text_to_generate)
     generated_output = torch.tensor(encoded_input).unsqueeze(0).to(device)
     
-    new_max_length = (260 / 2) + len(encoded_input) # Limit the generated tweet to about 280 characters max
+    new_max_length = (max_token_length / 2) + len(encoded_input) # Limit the generated tweet to about 280 characters max
     
     outputs = model.generate(
             generated_output, 
@@ -70,8 +72,7 @@ op_tweet_ids = []
 
 for tweet in replies:
     tweet_text = tweet_helper.fix_tweet_text(tweet["text"])
-    
-    if tweet_text != "" and tweet_helper.filter_tweet(tweet_text) == None:
+    if tweet_text != "" and not tweet_helper.filter_tweet(tweet_text):
         output = generate_outputs(tweet_text, 1)[0]
         output = output if len(output) <= 280 else output[0:280] #Truncate at 280 characters
         
@@ -81,5 +82,4 @@ for tweet in replies:
         
         tweet_to_send = { "text": output, "reply": {"in_reply_to_tweet_id": tweet["id"]}}
         t.tweets(_json=tweet_to_send)
-    
 print("Done")
