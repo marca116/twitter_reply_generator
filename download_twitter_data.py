@@ -11,7 +11,7 @@ TWITTER_KEY=os.environ['TWITTER_KEY']
 TWITTER_SECRET=os.environ['TWITTER_SECRET']
 TWITTER_APP_NAME=os.environ['TWITTER_APP_NAME']
 
-MY_TWITTER_CREDENTIALS = os.path.expanduser('~/.my_app_credentials_2')
+MY_TWITTER_CREDENTIALS = os.path.expanduser('~/.my_app_credentials')
 if not os.path.exists(MY_TWITTER_CREDENTIALS):
     oauth_dance(TWITTER_APP_NAME, TWITTER_KEY, TWITTER_SECRET, MY_TWITTER_CREDENTIALS)
     
@@ -65,7 +65,7 @@ def get_replies_tweets(pagination_token = None):
         "tweet.fields": "public_metrics,referenced_tweets,created_at,author_id,lang"
     }
     sort_order = "relevancy" # Will generally return well liked or relevant tweets
-    
+
     # Optional args
     cond_args = {"pagination_token": pagination_token } if pagination_token != None else {}
 
@@ -85,20 +85,17 @@ def process_op_tweets(op_tweet_ids):
 # INIT FILES
 
 current_dir = os.getcwd()
-op_path = os.path.join(current_dir, "op_liked.csv")
-labels = "id,created_at,author_id,like_count,reply_count,quote_count,text" + "\n"
+op_path = os.path.join(current_dir, "op.csv")
+base_labels = "created_at,author_id,like_count,reply_count,quote_count,text" + "\n"
 
 if not exists(op_path):
     with open(op_path, 'w+', encoding="utf-8") as op_writer:
-        op_writer.write(labels)
+        op_writer.write("op_id," + base_labels)
         
-replies_path = os.path.join(current_dir, "replies_liked.csv")
-labels = "in_reply_to_tweet_id," + labels
+replies_path = os.path.join(current_dir, "replies.csv")
 if not exists(replies_path):
     with open(replies_path, 'w+', encoding="utf-8") as op_writer:
-        op_writer.write(labels)        
-
-checkpoint_path = os.path.join(current_dir, "checkpoint.txt") 
+        op_writer.write("op_id,reply_id," + base_labels)        
 
 is_first_loop = True
 next_token = None
@@ -122,12 +119,7 @@ while next_token != None or is_first_loop:
     if len(op_tweet_ids) > 0:
         process_op_tweets(op_tweet_ids)
     
-    next_token = tweets_replies_result.get("meta").get("next_token")
-    
-    if next_token != None:
-        with open(checkpoint_path, 'w+', encoding="utf-8") as op_writer:
-            op_writer.write(next_token)
-    
+    next_token = tweets_replies_result.get("meta").get("next_token") 
     total_replies += len(replies)
     
     print("Total replies : " + str(total_replies) + ", Total processed replies : " + str(total_processed_replies) + ", Time : " + datetime.utcnow().isoformat())
